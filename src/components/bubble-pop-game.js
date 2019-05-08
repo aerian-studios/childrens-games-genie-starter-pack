@@ -36,50 +36,50 @@ export class BubblePopGame extends Screen {
     //addForegroundCharacter
   }
 
-  addBackground() {
+  addBackground = () => {
     const backgroundImage = this.game.add.image(0, 0, "game.background");
     return this.scene.addToBackground(backgroundImage);
-  }
+  };
 
-  addShooter() {
-    this.shooter = this.game.add.sprite(
-      this.theme.shooter.position.x,
-      this.theme.shooter.position.y,
-      "game.shooter"
+  addShooter = () => {
+    this.shootFrom = this.game.add.sprite(
+      this.theme.shootFrom.position.x,
+      this.theme.shootFrom.position.y
     );
-    this.scene.addToBackground(this.shooter);
-    this.shooter.physicsBodyType = Phaser.Physics.ARCADE;
-    this.shooter.anchor.setTo(
-      this.theme.shooter.anchor.x,
-      this.theme.shooter.anchor.y
+    this.scene.addToBackground(this.shootFrom);
+    this.shootFrom.physicsBodyType = Phaser.Physics.ARCADE;
+    this.shootFrom.anchor.setTo(
+      this.theme.shootFrom.anchor.x,
+      this.theme.shootFrom.anchor.y
     );
-    this.shooter.angle = 0;
+    this.shootFrom.addChild(this.createAimLine());
+  };
 
-    console.log(this.shooter);
-
+  createAimLine = () => {
     this.aimLine = this.game.add.group(
-      this.theme.shooter.position.x,
-      this.theme.shooter.position.y
+      this.theme.shootFrom.position.x,
+      this.theme.shootFrom.position.y
     );
     this.aimLine.physicsBodyType = Phaser.Physics.ARCADE;
     for (let i = 0; i < 20; i++) {
-      //? swap for image?
-      const graphics = this.game.add.graphics(0, 0);
-      graphics.lineStyle(0);
-      graphics.beginFill(0xffff0b, 0.5);
-      graphics.drawCircle(0, -(i * 20), 10);
-      graphics.endFill();
-      this.aimLine.add(graphics);
+      const dot = this.createAimDot(-(i * 20));
+      this.aimLine.add(dot);
     }
-    console.log(this.aimLine.world);
+    return this.aimLine;
+  };
 
-    this.shooter.addChild(this.aimLine);
-    // this.aimLine.rotation = 1.57;
-    // this.aimLine.anchor.setTo(0.5, 1.0);
-  }
+  createAimDot = y => {
+    const dot = this.game.add.graphics(0, 0);
+    dot.lineStyle(0);
+    dot.beginFill(0xffff0b, 0.5);
+    dot.drawCircle(0, y, 10);
+    dot.endFill();
+    return dot;
+  };
 
-  createAmmo() {
+  createAmmo = () => {
     this.allowFireTime = 0; // used to prevent multiple shots within 50ms of one another
+    this.nextAmmoIndex = 0;
 
     this.ammo = this.game.add.group();
     this.ammo.enableBody = true;
@@ -90,23 +90,33 @@ export class BubblePopGame extends Screen {
     this.ammo.createMultiple(100, bulletImage);
     this.ammo.setAll("scale.x", 0.3);
     this.ammo.setAll("scale.y", 0.3);
-  }
 
-  fireBubble() {
+    this.addNextAmmoToScene();
+  };
+
+  fireBubble = () => {
     if (this.game.time.now > this.allowFireTime) {
-      const bullet = this.ammo.getFirstExists(false);
-
-      if (bullet) {
-        bullet.reset(this.shooter.x, this.shooter.y);
-        this.scene.addToBackground(bullet);
-        bullet.lifespan = 2000;
+      if (this.currentBullet) {
+        this.currentBullet.lifespan = 2000;
         this.game.physics.arcade.velocityFromRotation(
           this.aimLine.rotation - 1.57,
           1000,
-          bullet.body.velocity
+          this.currentBullet.body.velocity
         );
-        this.allowFireTime = this.game.time.now + 50;
+        this.allowFireTime = this.game.time.now + 200;
+
+        setTimeout(this.addNextAmmoToScene, 150);
       }
     }
-  }
+  };
+
+  addNextAmmoToScene = () => {
+    this.currentBullet = this.ammo.getChildAt(this.nextAmmoIndex);
+    if (!this.currentBullet) {
+      this.nextAmmoIndex = 0;
+      this.addNextAmmoToScene();
+    }
+    this.currentBullet.reset(this.shootFrom.x, this.shootFrom.y);
+    this.scene.addToBackground(this.currentBullet);
+  };
 }

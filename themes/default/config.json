@@ -63,7 +63,7 @@
         "position": { "x": -5, "y": 200 },
         "anchor": { "x": 0.5, "y": 1 }
       },
-      "shooter": {
+      "shootFrom": {
         "position": { "x": 0, "y": 270 },
         "anchor": { "x": 0.5, "y": 0.9 }
       }
