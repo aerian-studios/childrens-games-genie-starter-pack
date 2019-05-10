@@ -9,8 +9,7 @@ export class BubblePopGame extends Screen {
   create() {
     this.game.physics.startSystem(Phaser.Physics.ARCADE);
     this.theme = this.context.config.theme[this.game.state.current];
-
-    this.addAssets();
+    this.addComponents();
 
     this.game.input.onDown.add(() => {
       this.fireBubble();
@@ -20,29 +19,49 @@ export class BubblePopGame extends Screen {
   render() {}
 
   update() {
-    this.aimLine.rotation =
-      this.game.physics.arcade.angleToPointer(
+
+    const angleToPointer = this.game.physics.arcade.angleToPointer(
         this.aimLine.children[0],
         this.input.activePointer,
         true
       ) + 1.57;
     
+    this.aimLine.rotation = angleToPointer;
     this.physics.arcade.collide(this.targets, this.ammo, this.collision, null, this);
+    this.physics.arcade.collide(this.walls, this.ammo);
   }
 
-  addAssets() {
+  addComponents() {
     this.addBackground();
+    this.createEdges();
     this.addShooter();
     this.addTargets();
     this.createAmmo();
-
-    //addForegroundCharacter
   }
 
   addBackground = () => {
     const backgroundImage = this.game.add.image(0, 0, "game.background");
     return this.scene.addToBackground(backgroundImage);
   };
+
+  createEdges = () => {
+    
+    this.walls = this.game.add.group();
+    this.walls.lines = {};
+    this.walls.add(this.addWall("left"));
+    this.walls.add(this.addWall("right"));
+    
+    this.scene.addToBackground(this.walls);
+  }
+
+  addWall = side => {
+    const wall = this.game.add.sprite(this.theme.walls[side].position.x, -this.game.height/2, "game." + side + "Wall");
+    this.game.physics.arcade.enable(wall);
+    wall.enableBody = true;
+    wall.body.immovable = true;
+    wall.body.bounce = 1;
+    return wall;
+  }
 
   addTargets = () => {
     this.targets = this.game.add.group();
@@ -68,18 +87,12 @@ export class BubblePopGame extends Screen {
     );
     this.scene.addToBackground(this.shootFrom);
     this.shootFrom.physicsBodyType = Phaser.Physics.ARCADE;
-    this.shootFrom.anchor.setTo(
-      this.theme.shootFrom.anchor.x,
-      this.theme.shootFrom.anchor.y
-    );
     this.shootFrom.addChild(this.createAimLine());
+
   };
 
   createAimLine = () => {
-    this.aimLine = this.game.add.group(
-      this.theme.shootFrom.position.x,
-      this.theme.shootFrom.position.y
-    );
+    this.aimLine = this.game.add.group();
     this.aimLine.physicsBodyType = Phaser.Physics.ARCADE;
     for (let i = 0; i < 20; i++) {
       const dot = this.createAimDot(-(i * 20));
@@ -104,7 +117,8 @@ export class BubblePopGame extends Screen {
     this.ammo = this.game.add.group();
     this.ammo.enableBody = true;
     this.ammo.physicsBodyType = Phaser.Physics.ARCADE;
-    // this.ammo.body.onCollide.add(collision, this);
+    this.game.physics.arcade.enable(this.ammo);
+
     // TO DO: read from array here and create the correct ammo types in correct order
     const bulletImage = "game." + "game_button_2_0";
     this.ammo.createMultiple(100, bulletImage);
@@ -114,6 +128,11 @@ export class BubblePopGame extends Screen {
       "events.onOutOfBounds.add",
       "events.onOutOfBounds",
       this.killBubble
+    );
+    
+    this.ammo.callAll(
+      "body.bounce.set","body.bounce",
+      1
     );
     this.ammo.setAll("checkWorldBounds", true);
 
@@ -154,7 +173,6 @@ export class BubblePopGame extends Screen {
       this.addNextAmmoToScene();
     }
     this.currentBubble.reset(this.shootFrom.x, this.shootFrom.y);
-    this.game.physics.arcade.enable(this.currentBubble);
     this.scene.addToBackground(this.currentBubble);
   };
 }
