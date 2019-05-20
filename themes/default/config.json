@@ -69,7 +69,11 @@
           "right": {
               "position": { "x": 300 }
           }
-      }
+      },
+      "bubbles": ["r", "b", "g"],
+
+      "ammo": ["r", "b", "g"]
+      
     },
     "results": {
       "music": "loadscreen.backgroundMusicTwo",

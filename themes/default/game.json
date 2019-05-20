@@ -18,6 +18,30 @@
       "url": "game/wall-right.png",
       "overwrite": false
     },
+    { 
+      "type": "image",
+      "key": "bubble_r",
+      "url": "game/red.png",
+      "overwrite": false
+    },
+    { 
+      "type": "image",
+      "key": "bubble_g",
+      "url": "game/green.png",
+      "overwrite": false
+    },
+    { 
+      "type": "image",
+      "key": "bubble_b",
+      "url": "game/blue.png",
+      "overwrite": false
+    },
+    {
+      "type": "image",
+      "key": "rightWall",
+      "url": "game/wall-right.png",
+      "overwrite": false
+    },
     {
       "type": "image",
       "key": "game_button_1_0",
