@@ -18,6 +18,7 @@ export class BubblePopGame extends Screen {
     //  Create our collision groups. One for the player, one for the pandas
     this.ammoCollisionGroup = this.game.physics.p2.createCollisionGroup();
     this.targetCollisionGroup = this.game.physics.p2.createCollisionGroup();
+    this.wallsCollisionGroup = this.game.physics.p2.createCollisionGroup();
 
     this.theme = this.context.config.theme[this.game.state.current];
     this.addComponents();
@@ -51,6 +52,7 @@ export class BubblePopGame extends Screen {
   addComponents() {
     this.addBackground();
     this.createEdges();
+    this.createTimer();
     this.addShooter();
     this.addTargets();
     this.createAmmo();
@@ -63,24 +65,25 @@ export class BubblePopGame extends Screen {
 
   createEdges = () => {
     this.walls = this.game.add.group();
-    this.walls.lines = {};
-    this.walls.add(this.addWall("left"));
-    this.walls.add(this.addWall("right"));
+    this.walls.enableBody = true;
+    this.walls.physicsBodyType = Phaser.Physics.P2JS;
+    const leftWall = this.walls.create(...this.wallConfig("left"));
+    const rightWall = this.walls.create(...this.wallConfig("right"));
+
+    leftWall.body.collides(this.ammoCollisionGroup);
+    rightWall.body.collides(this.ammoCollisionGroup);
+    leftWall.body.setCollisionGroup(this.targetCollisionGroup);
+    rightWall.body.setCollisionGroup(this.targetCollisionGroup);
+
+    this.walls.setAll("body.kinematic", true);
+    leftWall.body.bounce = true;
+    rightWall.body.bounce = true;
 
     this.scene.addToBackground(this.walls);
   };
 
-  addWall = side => {
-    const wall = this.game.add.sprite(
-      this.theme.walls[side].position.x,
-      -this.game.height / 2,
-      "game." + side + "Wall"
-    );
-    this.game.physics.arcade.enable(wall);
-    wall.enableBody = true;
-    wall.body.immovable = true;
-    wall.body.bounce = 1;
-    return wall;
+  wallConfig = side => {
+    return [this.theme.walls[side].position.x, 0, "game." + side + "Wall"];
   };
 
   addTargets = () => {
@@ -98,9 +101,8 @@ export class BubblePopGame extends Screen {
     target2.body.setCircle(10);
     target1.body.setCollisionGroup(this.targetCollisionGroup);
     target2.body.setCollisionGroup(this.targetCollisionGroup);
-    target1.body.collides(this.ammoCollisionGroup);
-    target2.body.collides(this.ammoCollisionGroup);
-
+    target1.body.collides(this.ammoCollisionGroup, this.collision);
+    target2.body.collides(this.ammoCollisionGroup, this.collision);
     this.targets.setAll("body.kinematic", true);
     this.targets.setAll("scale.x", 0.1);
     this.targets.setAll("scale.y", 0.1);
@@ -148,54 +150,34 @@ export class BubblePopGame extends Screen {
 
     this.addAmmoToGroup();
 
-    // const bulletImage = "game." + "game_button_2_0";
-    // this.ammo.createMultiple(100, bulletImage);
-    // this.ammo.setAll("scale.x", 0.1);
-    // this.ammo.setAll("scale.y", 0.1);
-    // const bulletImage = "game." + "game_button_2_0";
-    // this.ammo.createMultiple(100, bulletImage);
-
-    this.ammo.setAll("scale.x", 0.02);
-    this.ammo.setAll("scale.y", 0.02);
+    this.ammo.setAll("width", 20);
+    this.ammo.setAll("height", 20);
     this.ammo.setAll("checkWorldBounds", true);
     this.ammo.setAll("outOfBoundsKill", true);
-    // this.ammo.callAll(
-    //   "events.onOutOfBounds.add",
-    //   "events.onOutOfBounds",
-    //   this.killBubble
-    // );
-
-    // this.ammo.callAll("body.bounce.set", "body.bounce", 1);
-    // this.ammo.setAll("checkWorldBounds", true);
-
-    this.addNextAmmoToScene();
   };
 
   addAmmoToGroup = () => {
     let i = 0;
-    let j = 0;
     while (this.ammo.length <= (this.theme.amountOfAmmo || 100)) {
       const sprite = this.ammo.create(
-        j * 100,
-        j * 100,
+        0,
+        0,
         "game.bubble_" + this.theme.ammo[i]
       );
-      sprite.body.setCircle(5);
+      sprite.body.setCircle(10);
       sprite.body.setCollisionGroup(this.ammoCollisionGroup);
-      sprite.body.collides([this.targetCollisionGroup], this.collision);
-      // this.game.physics.enable(sprite);
-      // this.ammo.add(sprite);
+      sprite.body.collides(
+        [this.targetCollisionGroup, this.wallsCollisionGroup],
+        this.collision
+      );
       i++;
       if (i >= this.theme.ammo.length) {
         i = 0;
       }
-
-      j++;
     }
   };
 
   createBullet = key => {
-    console.log("createBullet", key);
     const src = "game.bubble_" + key;
     const sprite = this.game.add.sprite(0, 0, src);
     sprite.bubbleKey = key;
@@ -203,8 +185,6 @@ export class BubblePopGame extends Screen {
   };
 
   checkIfNeedMoreAmmo = minAmount => {
-    console.log("check ammo");
-
     if (this.ammo.children.length < minAmount) {
       this.addAmmoToGroup();
     }
@@ -215,7 +195,7 @@ export class BubblePopGame extends Screen {
   };
 
   collision = (bullet, target) => {
-    console.log("SMASHHH");
+    if (target.bounce) return;
 
     bullet.setZeroVelocity();
     bullet.kinematic = true;
@@ -226,40 +206,31 @@ export class BubblePopGame extends Screen {
     bullet.removeCollisionGroup(this.ammoCollisionGroup);
     bullet.setCollisionGroup(this.targetCollisionGroup);
     bullet.collides(this.ammoCollisionGroup, this.collision);
-    console.log(bullet);
-    // this.targets.add(bullet);
-
-    // console.log("Ammo", this.ammo.length, "targets", this.targets.length);
-    // bullet.body.velocity.y = 0;
-    // bullet.body.velocity.x = 0;
-    // // bullet.enableBody = false;
-    // bullet.body.immovable = true;
-    // this.killBubble(bullet);
-    // this.checkIfNeedMoreAmmo(5);
   };
 
   fireBubble = () => {
     if (this.game.time.now > this.allowFireTime) {
       if (this.nextBubble) {
         this.currentBubble = this.nextBubble;
-        // this.game.physics.arcade.velocityFromRotation(
-        //   this.aimLine.rotation - 1.57,
-        //   1000,
-        //   this.currentBubble.body.velocity
-        // );
         this.nextBubble.body.rotation = this.aimLine.rotation;
-        this.nextBubble.body.moveForward(400);
+        this.nextBubble.body.moveForward(600);
         this.allowFireTime = this.game.time.now + 200;
-
-        setTimeout(this.addNextAmmoToScene, 150); // swap for phaser timer
+        this.timer.resume();
       }
     }
+  };
+
+  createTimer = () => {
+    this.timer = this.game.time.create();
+    this.timerEvent = this.timer.loop(150, this.addNextAmmoToScene, this);
+    this.timer.start();
   };
 
   addNextAmmoToScene = () => {
     if (!this.ammo.length) {
       return;
     }
+    this.timer.pause();
     this.nextBubble = this.ammo.getChildAt(0);
     if (this.nextBubble) {
       this.nextBubble.reset(this.shootFrom.x, this.shootFrom.y);
