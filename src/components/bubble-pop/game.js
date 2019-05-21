@@ -1,5 +1,8 @@
-import { Screen } from "../../node_modules/genie/src/core/screen.js";
-import { gmi } from "../../node_modules/genie/src/core/gmi/gmi.js";
+import { Screen } from "../../../node_modules/genie/src/core/screen.js";
+
+import { AmmoModel } from "./ammo/model.js";
+import { Ammo } from "./ammo/ammo.js";
+// import { gmi } from "genie/src/core/gmi/gmi";
 
 export class BubblePopGame extends Screen {
   constructor() {
@@ -7,21 +10,9 @@ export class BubblePopGame extends Screen {
   }
 
   create() {
-    this.game.physics.startSystem(Phaser.Physics.P2JS);
-    this.game.physics.startSystem(Phaser.Physics.Arcade);
-
-    //  Turn on impact events for the world, without this we get no collision callbacks
-    this.game.physics.p2.setImpactEvents(true);
-
-    this.game.physics.p2.restitution = 0.8;
-
-    //  Create our collision groups. One for the player, one for the pandas
-    this.ammoCollisionGroup = this.game.physics.p2.createCollisionGroup();
-    this.targetCollisionGroup = this.game.physics.p2.createCollisionGroup();
-    this.wallsCollisionGroup = this.game.physics.p2.createCollisionGroup();
-
     this.theme = this.context.config.theme[this.game.state.current];
-    this.addComponents();
+
+    this.createComponents();
 
     this.game.input.onDown.add(() => {
       this.fireBubble();
@@ -39,23 +30,51 @@ export class BubblePopGame extends Screen {
       ) + 1.57;
 
     this.aimLine.rotation = angleToPointer;
-    // this.physics.arcade.collide(
-    //   this.targets,
-    //   this.currentBubble,
-    //   this.collision,
-    //   null,
-    //   this
-    // );
     this.physics.arcade.collide(this.walls, this.ammo);
   }
 
-  addComponents() {
+  createComponents() {
     this.addBackground();
+    this.createPhysics();
+    this.createModels();
+    this.createAmmo();
     this.createEdges();
     this.createTimer();
     this.addShooter();
     this.addTargets();
     this.createAmmo();
+  }
+
+  createPhysics() {
+    this.game.physics.startSystem(Phaser.Physics.P2JS);
+    this.game.physics.startSystem(Phaser.Physics.Arcade);
+
+    //  Turn on impact events for the world, without this we get no collision callbacks
+    this.game.physics.p2.setImpactEvents(true);
+    this.game.physics.p2.restitution = 0.8;
+
+    this.collisionGroups = {
+      ammo: this.game.physics.p2.createCollisionGroup(),
+      targets: this.game.physics.p2.createCollisionGroup(),
+      walls: this.game.physics.p2.createCollisionGroup()
+    };
+  }
+
+  createModels() {
+    this.models = {
+      ammoModel: new AmmoModel(this.game, this.theme)
+    };
+  }
+
+  createAmmo() {
+    this.ammo = new Ammo(
+      this.game,
+      this.theme,
+      this.models,
+      this.collisionGroups
+    );
+
+    this.allowFireTime = 0; // used to prevent multiple shots within 50ms of one another
   }
 
   addBackground = () => {
@@ -70,10 +89,10 @@ export class BubblePopGame extends Screen {
     const leftWall = this.walls.create(...this.wallConfig("left"));
     const rightWall = this.walls.create(...this.wallConfig("right"));
 
-    leftWall.body.collides(this.ammoCollisionGroup);
-    rightWall.body.collides(this.ammoCollisionGroup);
-    leftWall.body.setCollisionGroup(this.targetCollisionGroup);
-    rightWall.body.setCollisionGroup(this.targetCollisionGroup);
+    leftWall.body.collides(this.collisionGroups.ammo);
+    rightWall.body.collides(this.collisionGroups.ammo);
+    leftWall.body.setCollisionGroup(this.collisionGroups.targets);
+    rightWall.body.setCollisionGroup(this.collisionGroups.targets);
 
     this.walls.setAll("body.kinematic", true);
     leftWall.body.bounce = true;
@@ -99,10 +118,10 @@ export class BubblePopGame extends Screen {
 
     target1.body.setCircle(10);
     target2.body.setCircle(10);
-    target1.body.setCollisionGroup(this.targetCollisionGroup);
-    target2.body.setCollisionGroup(this.targetCollisionGroup);
-    target1.body.collides(this.ammoCollisionGroup, this.collision);
-    target2.body.collides(this.ammoCollisionGroup, this.collision);
+    target1.body.setCollisionGroup(this.collisionGroups.targets);
+    target2.body.setCollisionGroup(this.collisionGroups.targets);
+    target1.body.collides(this.collisionGroups.ammo, this.collision);
+    target2.body.collides(this.collisionGroups.ammo, this.collision);
     this.targets.setAll("body.kinematic", true);
     this.targets.setAll("scale.x", 0.1);
     this.targets.setAll("scale.y", 0.1);
@@ -140,43 +159,6 @@ export class BubblePopGame extends Screen {
     return dot;
   };
 
-  createAmmo = () => {
-    this.allowFireTime = 0; // used to prevent multiple shots within 50ms of one another
-
-    this.ammo = this.game.add.group();
-    this.ammo.enableBody = true;
-    this.ammo.physicsBodyType = Phaser.Physics.P2JS;
-    // this.game.physics.arcade.enable(this.ammo);
-
-    this.addAmmoToGroup();
-
-    this.ammo.setAll("width", 20);
-    this.ammo.setAll("height", 20);
-    this.ammo.setAll("checkWorldBounds", true);
-    this.ammo.setAll("outOfBoundsKill", true);
-  };
-
-  addAmmoToGroup = () => {
-    let i = 0;
-    while (this.ammo.length <= (this.theme.amountOfAmmo || 100)) {
-      const sprite = this.ammo.create(
-        0,
-        0,
-        "game.bubble_" + this.theme.ammo[i]
-      );
-      sprite.body.setCircle(10);
-      sprite.body.setCollisionGroup(this.ammoCollisionGroup);
-      sprite.body.collides(
-        [this.targetCollisionGroup, this.wallsCollisionGroup],
-        this.collision
-      );
-      i++;
-      if (i >= this.theme.ammo.length) {
-        i = 0;
-      }
-    }
-  };
-
   createBullet = key => {
     const src = "game.bubble_" + key;
     const sprite = this.game.add.sprite(0, 0, src);
@@ -203,9 +185,9 @@ export class BubblePopGame extends Screen {
     target.setZeroVelocity();
 
     target.setZeroRotation();
-    bullet.removeCollisionGroup(this.ammoCollisionGroup);
-    bullet.setCollisionGroup(this.targetCollisionGroup);
-    bullet.collides(this.ammoCollisionGroup, this.collision);
+    bullet.removeCollisionGroup(this.collisionGroups.ammo);
+    bullet.setCollisionGroup(this.collisionGroups.targets);
+    bullet.collides(this.collisionGroups.ammo, this.collision);
   };
 
   fireBubble = () => {
