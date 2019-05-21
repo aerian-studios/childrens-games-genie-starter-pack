@@ -1,7 +1,7 @@
 import { Home } from "../node_modules/genie/src/components/home.js";
 import { Loadscreen } from "../node_modules/genie/src/components/loadscreen.js";
 import { Select } from "../node_modules/genie/src/components/select.js";
-import { BubblePopGame } from "./components/bubble-pop-game.js";
+import { BubblePopGame } from "./components/bubble-pop/game.js";
 import { Results } from "../node_modules/genie/src/components/results.js";
 import { startup } from "../node_modules/genie/src/core/startup.js";
 import { settingsChannel } from "../node_modules/genie/src/core/settings.js";
