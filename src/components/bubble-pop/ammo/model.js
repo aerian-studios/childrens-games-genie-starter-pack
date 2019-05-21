@@ -8,8 +8,6 @@ export class AmmoModel extends Model {
     this.remainingAmmo = easyModeEnabled
       ? "infinity"
       : theme.amountOfAmmo || 100;
-
-    this.allowFireTime = 0;
   }
 
   init() {
@@ -18,13 +16,5 @@ export class AmmoModel extends Model {
 
   getRemainingAmmo = () => {
     return this.remainingAmmo;
-  };
-
-  getAllowFireTime = () => {
-    return this.allowFireTime;
-  };
-
-  setAllowFireTime = val => {
-    this.allowFireTime = val;
   };
 }

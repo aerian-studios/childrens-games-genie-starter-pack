@@ -5,7 +5,7 @@
 import { Wall } from "./wall.js";
 
 export class Edges extends Phaser.Group {
-  constructor(game, theme, models, scene) {
+  constructor(game, theme, models) {
     super(game, 0, 0);
     this.game = game;
     this.theme = theme;
@@ -14,10 +14,10 @@ export class Edges extends Phaser.Group {
     this.enableBody = true;
     this.physicsBodyType = Phaser.Physics.P2JS;
 
-    const leftWall = this.add(new Wall(game, ...this.getWallConfig("left")));
-    const rightWall = this.add(new Wall(game, ...this.getWallConfig("right")));
+    this.add(new Wall(game, ...this.getWallConfig("left")));
+    this.add(new Wall(game, ...this.getWallConfig("right")));
 
-    scene.addToBackground(this);
+    // scene.addToBackground(this);
   }
 
   getWallConfig = side => {

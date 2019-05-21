@@ -59,21 +59,21 @@
         },
         "position": { "x": -270, "y": 230 }
       },
-      "shootFrom": {
-        "position": { "x": 0, "y": 270 }
+      "shooter": {
+        "position": { "x": 0, "y": 270 },
+        "fireSpeed": 600
       },
       "walls": {
-          "left": {
-              "position": { "x": -324}
-          },
-          "right": {
-              "position": { "x": 300 }
-          }
+        "left": {
+          "position": { "x": -324 }
+        },
+        "right": {
+          "position": { "x": 300 }
+        }
       },
       "bubbles": ["r", "b", "g"],
 
       "ammo": ["r", "b", "g"]
-      
     },
     "results": {
       "music": "loadscreen.backgroundMusicTwo",

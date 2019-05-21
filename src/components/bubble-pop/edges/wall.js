@@ -3,8 +3,8 @@
 */
 
 export class Wall extends Phaser.Sprite {
-  constructor(game, x, y, src, collisionGroups) {
-    super(game, x, y, src);
+  constructor(game, x, y, key, collisionGroups) {
+    super(game, x, y, key);
 
     game.physics.enable(this, Phaser.Physics.P2JS);
     this.body.collides(collisionGroups.ammo);

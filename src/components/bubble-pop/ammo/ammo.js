@@ -57,4 +57,12 @@ export class Ammo extends Phaser.Group {
     bullet.setCollisionGroup(this.collisionModel.collisionGroups.targets);
     bullet.collides(this.collisionModel.collisionGroups.ammo);
   }
+
+  // will be used for when easy mode is enabled
+  // checkIfNeedMoreAmmo = minAmount => {
+  //   if(!easyMode) return;
+  //   if (this.ammo.children.length < minAmount) {
+  //     this.addAmmoToGroup();
+  //   }
+  // };
 }
