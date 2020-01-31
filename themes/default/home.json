@@ -3,7 +3,7 @@
         {
             "type": "image",
             "key": "title",
-            "url": "shared/title.png",
+            "url": "results/title.png",
             "overwrite": false
         },
         {

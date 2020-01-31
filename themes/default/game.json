@@ -5,6 +5,12 @@
       "key": "background",
       "url": "game/background_dunes.png",
       "overwrite": false
+    },
+    {
+      "type": "image",
+      "key": "game_button",
+      "url": "game/egg_1_0.png",
+      "overwrite": false
     }
   ]
 }
