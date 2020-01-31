@@ -16,12 +16,18 @@ export class ClickProgressionGame extends Screen {
     );
 
     this.scene.addToBackground(text);
+    this.clickCount = 0;
+
+    const buttonClicked = () => {
+      this.clickCount = this.clickCount < 9 ? this.clickCount + 1 : 9;
+      gameButton.loadTexture(`game.game_button_1_${this.clickCount}`);
+    };
 
     const gameButton = this.game.add.button(
       100,
       100,
-      "game.game_button",
-      () => console.log("clicked", this),
+      "game.game_button_1_0",
+      buttonClicked,
       this
     );
 
