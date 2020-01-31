@@ -102,7 +102,7 @@
       "achievements": true,
       "music": "loadscreen.backgroundMusicTwo",
       "text": {
-        "content": "Click eggs to hatch them!",
+        "content": "Smash eggs to hatch them!",
         "style": {
           "font": "40px ReithSans",
           "fontWeight": "bold",
@@ -128,8 +128,8 @@
       "resultText": {
         "style": {
           "font": "bold 40px ReithSans",
-          "align": "center",
-          "fill": "#686868",
+          "align": "right",
+          "fill": "#ff9999",
           "boundsAlignH": "center",
           "fontWeight": "bold"
         }
