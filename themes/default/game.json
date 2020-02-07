@@ -7,6 +7,14 @@
       "overwrite": false
     },
     {
+      "type": "atlas",
+      "url": "null",
+      "textureURL": "game/spritesheet.png",
+      "overwrite": false,
+      "atlasURL": "game/sprites.json",
+      "key": "texture-atlas"
+    },
+    {
       "type": "image",
       "key": "game_button",
       "url": "game/egg_1_0.png",

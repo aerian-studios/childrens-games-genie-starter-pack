@@ -129,7 +129,7 @@
         "style": {
           "font": "bold 40px ReithSans",
           "align": "right",
-          "fill": "#ff9999",
+          "fill": "#000000",
           "boundsAlignH": "center",
           "fontWeight": "bold"
         }
